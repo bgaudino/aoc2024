@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs};
 
 fn main() {
-    let contents = fs::read_to_string("day01.txt").unwrap();
+    let contents = fs::read_to_string("input.txt").unwrap();
     let mut list_1: Vec<usize> = vec![];
     let mut list_2: Vec<usize> = vec![];
     for line in contents.lines() {
