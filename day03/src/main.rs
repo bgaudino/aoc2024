@@ -28,18 +28,12 @@ fn multiply(instruction: &str) -> i32 {
 }
 
 fn filter_disabled(instructions: &str) -> String {
-    static DO_PATTERN: &str = r"do\(\)";
-    static DONT_PATTERN: &str = r"don\'t\(\)";
-
-    let dos = Regex::new(DO_PATTERN).unwrap();
-    let donts = Regex::new(DONT_PATTERN).unwrap();
-
-    donts
-        .split(instructions)
+    instructions
+        .split("don't()")
         .enumerate()
         .flat_map(|(i, segment)| {
             let skip = if i == 0 { 0 } else { 1 };
-            dos.split(segment).skip(skip)
+            segment.split("do()").skip(skip)
         })
         .collect()
 }
