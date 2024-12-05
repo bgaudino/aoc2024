@@ -41,7 +41,7 @@ impl WordSearch {
         }
     }
 
-    fn find(&self, point: Point, direction: Point) -> bool {
+    fn find_xmas(&self, point: Point, direction: Point) -> bool {
         let mut x = point.0;
         let mut y = point.1;
 
@@ -56,8 +56,29 @@ impl WordSearch {
         true
     }
 
-    fn find_all(&self, point: Point) -> usize {
-        DIRECTIONS.iter().filter(|d| self.find(point, **d)).count()
+    fn find_all_xmas(&self, point: Point) -> usize {
+        DIRECTIONS
+            .iter()
+            .filter(|d| self.find_xmas(point, **d))
+            .count()
+    }
+
+    fn find_x_mas(&self, point: Point) -> bool {
+        if self.get(point) != 'A' {
+            return false;
+        }
+
+        let check_diagonal = |a: Point, b: Point| -> bool {
+            let chars = (self.get(a), self.get(b));
+            chars == ('M', 'S') || chars == ('S', 'M')
+        };
+
+        let top_left = (point.0 - 1, point.1 - 1);
+        let top_right = (point.0 - 1, point.1 + 1);
+        let bottom_right = (point.0 + 1, point.1 + 1);
+        let bottom_left = (point.0 + 1, point.1 - 1);
+
+        check_diagonal(top_left, bottom_right) && check_diagonal(top_right, bottom_left)
     }
 }
 
@@ -66,12 +87,15 @@ fn main() {
     let contents = fs::read_to_string(filename).expect("Could not read file");
     let word_search = WordSearch::from_string(contents);
 
-    let mut count = 0;
+    let mut xmas_count = 0;
+    let mut x_mas_count = 0;
     for y in 0..word_search.max_y {
         for x in 0..word_search.max_x {
-            count += word_search.find_all((x, y));
+            xmas_count += word_search.find_all_xmas((x, y));
+            x_mas_count += word_search.find_x_mas((x, y)) as usize;
         }
     }
 
-    println!("Part 1: {}", count);
+    println!("Part 1: {}", xmas_count);
+    println!("Part 2: {}", x_mas_count);
 }
