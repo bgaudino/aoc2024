@@ -52,6 +52,7 @@ struct NorthPoleProtoTypeManufacturingLab {
     max_x: isize,
     max_y: isize,
     guard: Guard,
+    start: Point,
     obstructions: HashSet<Point>,
     visited: HashSet<Point>,
     orientations: HashSet<Guard>,
@@ -67,6 +68,7 @@ impl NorthPoleProtoTypeManufacturingLab {
                 facing: 0,
                 directions: DIRECTIONS,
             },
+            start: Point { x: 0, y: 0},
             obstructions: HashSet::new(),
             visited: HashSet::new(),
             orientations: HashSet::new(),
@@ -100,6 +102,13 @@ impl NorthPoleProtoTypeManufacturingLab {
             self.orientations.insert(self.guard);
             self.move_guard();
         }
+    }
+
+    fn reset(&mut self) {
+        self.visited.clear();
+        self.orientations.clear();
+        self.guard.position = self.start;
+        self.guard.facing = 0;
     }
 }
 
@@ -145,7 +154,8 @@ fn get_lab(s: &str) -> NorthPoleProtoTypeManufacturingLab {
                         x: x as isize,
                         y: y as isize,
                     };
-                    lab.visited.insert(lab.guard.position);
+                    lab.start = lab.guard.position;
+                    lab.visited.insert(lab.start);
                 }
                 _ => (),
             };
@@ -161,12 +171,13 @@ fn main() {
     println!("Part 1: {}", lab.visited.len());
 
     let mut count = 0;
-    for position in lab.visited.iter() {
-        let mut new_lab = get_lab(&contents);
-        new_lab.obstructions.insert(*position);
-        if new_lab.is_loop() {
+    for position in lab.visited.clone() {
+        lab.reset();
+        lab.obstructions.insert(position);
+        if lab.is_loop() {
             count += 1;
         }
+        lab.obstructions.remove(&position);
     }
     println!("Part 2: {}", count);
 }
