@@ -60,8 +60,8 @@ struct NorthPoleProtoTypeManufacturingLab {
 impl NorthPoleProtoTypeManufacturingLab {
     fn new() -> Self {
         Self {
-            max_x: 1,
-            max_y: 2,
+            max_x: 0,
+            max_y: 0,
             guard: Guard {
                 position: Point { x: 0, y: 0 },
                 facing: 0,
