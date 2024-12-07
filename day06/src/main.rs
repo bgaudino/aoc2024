@@ -161,17 +161,11 @@ fn main() {
     println!("Part 1: {}", lab.visited.len());
 
     let mut count = 0;
-    for y in 0..lab.max_y {
-        for x in 0..lab.max_x {
-            lab = get_lab(&contents);
-            let point = Point{x, y};
-            if lab.obstructions.contains(&point) || point == lab.guard.position {
-                continue;
-            }
-            lab.obstructions.insert(Point{x, y});
-            if lab.is_loop() {
-                count += 1;
-            }
+    for position in lab.visited.iter() {
+        let mut new_lab = get_lab(&contents);
+        new_lab.obstructions.insert(*position);
+        if new_lab.is_loop() {
+            count += 1;
         }
     }
     println!("Part 2: {}", count);
