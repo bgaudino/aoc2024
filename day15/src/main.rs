@@ -30,30 +30,19 @@ fn _print_warehouse(warehouse: &Warehouse) {
     println!()
 }
 
-fn try_move_lanternfish(warehouse: &mut Warehouse, location: &Point, direction: &Point) -> Point {
-    let lanternfish = *warehouse.get(location).unwrap();
-    assert_eq!(lanternfish, LANTERNFISH);
-
+fn try_move(warehouse: &mut Warehouse, location: &Point, direction: &Point) -> Point {
+    let space = *warehouse.get(location).unwrap();
     let next_location = (location.0 + direction.0, location.1 + direction.1);
     let next_space = warehouse.get(&next_location).unwrap();
-    if *next_space != SPACE {
-        if *next_space == WALL {
+    if *next_space == WALL {
+        return *location;
+    } else if *next_space != SPACE {
+        if next_location == try_move(warehouse, &next_location, direction) {
             return *location;
-        }
-        let mut cursor = next_location.clone();
-        loop {
-            cursor = (cursor.0 + direction.0, cursor.1 + direction.1);
-            let space = warehouse.get(&cursor).unwrap();
-            if *space == WALL {
-                return *location;
-            } else if *space == SPACE {
-                warehouse.insert(cursor, BOX);
-                break;
-            } 
         }
     }
     warehouse.insert(*location, SPACE);
-    warehouse.insert(next_location, lanternfish);
+    warehouse.insert(next_location, space);
     next_location
 }
 
@@ -82,7 +71,7 @@ fn main() {
         .collect();
 
     for direction in directions {
-        location = try_move_lanternfish(&mut warehouse, &location, &direction);
+        location = try_move(&mut warehouse, &location, &direction);
     }
 
     let part_1: i32 = warehouse.iter().map(|((x, y), ch)| {
