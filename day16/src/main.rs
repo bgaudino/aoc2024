@@ -10,7 +10,7 @@ type State = (Vec<Point>, Point, usize);
 const DIRECTIONS: [Point; 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
 
 fn main() {
-    let contents = fs::read_to_string("example.txt").unwrap();
+    let contents = fs::read_to_string("input.txt").unwrap();
 
     let mut walls: HashSet<Point> = HashSet::new();
     let (mut start, mut end) = ((-1, -1), (-1, -1));
@@ -30,24 +30,24 @@ fn main() {
 
     let mut queue: Vec<State> = vec![(vec![start], (1, 0), 0)];
     let mut seen: HashMap<(Point, Point), usize> = HashMap::new();
-    let mut min_cost = INFINITY;
+    let mut min_cost = INFINITY as usize;
     let mut paths: HashMap<usize, Vec<Vec<Point>>> = HashMap::new();
     while !queue.is_empty() {
         let (path, direction, cost) = queue.remove(0);
         let position = path[path.len() - 1];
         if let Some(c) = seen.get(&(position, direction)) {
-            if &cost >= c {
+            if &cost > c {
                 continue;
             }
         }
         seen.insert((position, direction), cost);
 
-        if cost as f32 > min_cost {
+        if cost > min_cost {
             continue;
         }
         if position == end {
             paths.entry(cost).or_insert_with(Vec::new).push(path);
-            min_cost = cost as f32;
+            min_cost = cost;
             continue;
         }
 
@@ -65,6 +65,12 @@ fn main() {
             }
         }
     }
+    let best_paths = paths.get(&min_cost).unwrap();
 
+    let mut best_spaces: HashSet<Point> = HashSet::new();
+    for path in best_paths {
+        best_spaces.extend(path);
+    }
     println!("Part 1: {}", min_cost);
+    println!("Part 2: {}", best_spaces.len());
 }
