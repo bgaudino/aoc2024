@@ -67,34 +67,50 @@ fn _print_warehouse(warehouse: &Warehouse) {
     println!()
 }
 
-fn try_move(
-    warehouse: &mut Warehouse,
-    location: &Point,
-    direction: &Point,
-    recurse: bool,
-) -> Point {
+fn can_move(warehouse: &mut Warehouse, location: &Point, direction: &Point, recurse: bool) -> bool {
     let space = *warehouse.get(location).unwrap();
     let next_location = (location.0 + direction.0, location.1 + direction.1);
     let next_space = warehouse.get(&next_location).unwrap();
     if next_space == &'#' {
-        return *location;
+        return false;
     } else if next_space != &'.' {
-        if next_location == try_move(warehouse, &next_location, direction, true) {
-            return *location;
+        if !can_move(warehouse, &next_location, direction, true) {
+            return false;
         }
     }
 
     if direction.1 != 0 && recurse {
         if space == '[' {
             let partner_location = (location.0 + 1, location.1);
-            if partner_location == try_move(warehouse, &partner_location, direction, false) {
-                return *location;
+            if !can_move(warehouse, &partner_location, direction, false) {
+                return false;
             }
         } else if space == ']' {
             let partner_location = (location.0 - 1, location.1);
-            if partner_location == try_move(warehouse, &partner_location, direction, false) {
-                return *location;
+            if !can_move(warehouse, &partner_location, direction, false) {
+                return false;
             }
+        }
+    }
+
+    true
+}
+
+fn mv(warehouse: &mut Warehouse, location: &Point, direction: &Point, recurse: bool) -> Point {
+    let space = *warehouse.get(location).unwrap();
+    let next_location = (location.0 + direction.0, location.1 + direction.1);
+    let next_space = warehouse.get(&next_location).unwrap();
+    if next_space != &'.' {
+        mv(warehouse, &next_location, direction, true);
+    }
+
+    if direction.1 != 0 && recurse {
+        if space == '[' {
+            let partner_location = (location.0 + 1, location.1);
+            mv(warehouse, &partner_location, direction, false);
+        } else if space == ']' {
+            let partner_location = (location.0 - 1, location.1);
+            mv(warehouse, &partner_location, direction, false);
         }
     }
 
@@ -110,7 +126,9 @@ fn main() {
     let (mut warehouse, mut location) = get_warehouse(segments.next().unwrap());
     let directions = get_directions(segments.next().unwrap());
     for direction in &directions {
-        location = try_move(&mut warehouse, &location, &direction, true);
+        if can_move(&mut warehouse, &location, &direction, true) {
+            location = mv(&mut warehouse, &location, direction, true);
+        }
     }
     println!("Part 1: {}", gps(&warehouse));
 
@@ -118,7 +136,9 @@ fn main() {
     (warehouse, location) = get_warehouse(&expand(segments.next().unwrap()));
 
     for direction in &directions {
-        location = try_move(&mut warehouse, &location, &direction, true);
+        if can_move(&mut warehouse, &location, &direction, true) {
+            location = mv(&mut warehouse, &location, direction, true);
+        }
     }
     println!("Part 2: {}", gps(&warehouse));
 }
