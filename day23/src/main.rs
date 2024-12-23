@@ -1,10 +1,13 @@
-use std::{collections::{HashMap, HashSet}, fs};
 use itertools::Itertools;
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+};
 
 fn main() {
-    let contents = fs::read_to_string("input.txt").unwrap(); 
+    let contents = fs::read_to_string("input.txt").unwrap();
 
-    let mut network: HashMap::<&str, HashSet<&str>> = HashMap::new();
+    let mut network: HashMap<&str, HashSet<&str>> = HashMap::new();
     for line in contents.lines() {
         let mut computers = line.split("-");
         let a = computers.next().unwrap();
@@ -29,6 +32,36 @@ fn main() {
             }
         }
     }
+    println!("Part 1: {}", triangles.len());
 
-    println!("{:?}", triangles.len());
+    let max_neighbors = network.values().map(|v| v.len()).max().unwrap_or(0);
+    for i in (1..=max_neighbors).rev() {
+        for (computer, connections) in network.iter() {
+            if connections.len() < i + 1 {
+                continue;
+            }
+            for subset in connections.iter().copied().combinations(i) {
+                if subset
+                    .iter()
+                    .all(|&n| subset.iter().all(|&m| n == m || network.get(m).unwrap().contains(n)))
+                {
+                    let mut computers: HashSet<String> = HashSet::new();
+                    for n in connections.iter() {
+                        computers.insert(n.to_string());
+                    }
+                    computers.insert(computer.to_string());
+                    let mut party: Vec<String> = vec![];
+                    for c in computers {
+                        party.push(c);
+                    }
+                    party.sort_unstable();
+                    let password = party.join(",");  
+                    println!("Part 2: {}", password);
+                    return;
+                }
+            }
+        }
+    }
+
+
 }
