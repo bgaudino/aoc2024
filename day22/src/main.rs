@@ -1,4 +1,7 @@
-use std::{collections::HashSet, fs};
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+};
 
 fn evolve(secret: isize) -> isize {
     let mut secret = secret;
@@ -30,7 +33,7 @@ fn main() {
         .map(|buyer| buyer.parse::<isize>().unwrap())
         .collect();
 
-    let mut secrets_: Vec<Vec<isize>> = Vec::new();
+    let mut all_secrets: Vec<Vec<isize>> = Vec::new();
     for buyer in &buyers {
         let mut secret = *buyer;
         let mut secrets: Vec<isize> = vec![secret];
@@ -38,47 +41,52 @@ fn main() {
             secret = evolve(secret);
             secrets.push(secret);
         }
-        secrets_.push(secrets);
+        all_secrets.push(secrets);
     }
 
-    let part_1: isize = secrets_.iter().map(|secrets| secrets.last().unwrap()).sum();
+    let part_1: isize = all_secrets
+        .iter()
+        .map(|secrets| secrets.last().unwrap())
+        .sum();
 
-    let mut all_changes: Vec<Vec<[isize; 4]>> = Vec::new();
-    let mut unique: HashSet<[isize; 4]> = HashSet::new();
-    for secrets in secrets_.iter() {
+    let mut price_maps: Vec<HashMap<[isize; 4], isize>> = Vec::new();
+    let mut unique_changes: HashSet<[isize; 4]> = HashSet::new();
+    for secrets in all_secrets.iter() {
+        let mut price_map: HashMap<[isize; 4], isize> = HashMap::new();
         let mut changes: Vec<isize> = vec![];
-        let mut change: Vec<[isize; 4]> = Vec::new();
         for i in 1..secrets.len() {
             let (prev, curr) = (secrets[i - 1], secrets[i]);
             let p = prev % 10;
             let c = curr % 10;
             changes.push(c - p);
-            if i >= 4 {
-                change.push([
-                    changes[i - 4],
-                    changes[i - 3],
-                    changes[i - 2],
-                    changes[i - 1],
-                ]);
+            if i < 4 {
+                continue;
+            }
+            let ch = [
+                changes[i - 4],
+                changes[i - 3],
+                changes[i - 2],
+                changes[i - 1],
+            ];
+            let price = price_map.get(&ch);
+            if price.is_none() {
+                price_map.insert(ch, secrets[i] % 10);
             }
         }
-        unique.extend(change.clone());
-        all_changes.push(change.clone());
+        unique_changes.extend(price_map.keys());
+        price_maps.push(price_map);
     }
     println!("Part 1: {}", part_1);
 
-    let part2 = unique.iter().map(|change| {
-        let mut price = 0;
-        for (i, changes) in all_changes.iter().enumerate() {
-            for (j, c) in changes.iter().enumerate() {
-                if change == c {
-                    let secret = secrets_[i][j + 4];
-                    price += secret % 10;
-                    break;
-                }
-            }
-        }
-        price
-    }).max().unwrap();
+    let part2: isize = unique_changes
+        .iter()
+        .map(|change| {
+            price_maps
+                .iter()
+                .map(|price_map| price_map.get(change).unwrap_or(&0))
+                .sum()
+        })
+        .max()
+        .unwrap();
     println!("Part 2: {}", part2);
 }
